@@ -1,8 +1,8 @@
-'use strict';
+//'use strict';
 
-module.exports = Pbf;
+//module.exports = Pbf;
 
-var ieee754 = require('ieee754');
+import { ieee754 } from "http://taisukef.github.io/ieee754/ieee754.js";
 
 function Pbf(buf) {
     this.buf = ArrayBuffer.isView && ArrayBuffer.isView(buf) ? buf : new Uint8Array(buf || 0);
@@ -640,3 +640,5 @@ function writeUtf8(buf, str, pos) {
     }
     return pos;
 }
+
+export { Pbf };

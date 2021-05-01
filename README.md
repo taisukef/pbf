@@ -22,18 +22,11 @@ Here's a result from running a real-world benchmark on Node v6.5
 
 #### Using Compiled Code
 
-Install `pbf` and compile a JavaScript module from a `.proto` file:
-
-```bash
-$ npm install -g pbf
-$ pbf example.proto > example.js
-```
-
 Then read and write objects using the module like this:
 
 ```js
-var Pbf = require('pbf');
-var Example = require('./example.js').Example;
+import { Pbf } from "https://taisukef.github.io/pbf/Pbf.js";
+import { Example } from "./example.js";
 
 // read
 var pbf = new Pbf(buffer);
@@ -43,27 +36,6 @@ var obj = Example.read(pbf);
 var pbf = new Pbf();
 Example.write(obj, pbf);
 var buffer = pbf.finish();
-```
-
-Alternatively, you can compile a module directly in the code:
-
-```js
-var compile = require('pbf/compile');
-var schema = require('protocol-buffers-schema');
-
-var proto = schema.parse(fs.readFileSync('example.proto'));
-var Test = compile(proto).Test;
-```
-
-If you use `webpack` as your module bundler, you can use [pbf-loader](https://github.com/trivago/pbf-loader)
-to load .proto files directly. It returns a compiled module ready to be used.
-
-Given you already configured your `webpack.config.js`, the code above would look like:
-```js
-var Pbf = require('pbf');
-var proto = require('./example.proto');
-
-var Test = proto.Test;
 ```
 
 #### Custom Reading
@@ -100,31 +72,13 @@ function writeLayer(layer, pbf) {
 }
 ```
 
-## Install
-
-Node and Browserify:
-
-```bash
-npm install pbf
-```
-
-Making a browser build:
-
-```bash
-npm install
-npm run build-dev # dist/pbf-dev.js (development build)
-npm run build-min # dist/pbf.js (minified production build)
-```
-
-CDN link: https://unpkg.com/pbf@3.0.5/dist/pbf.js
-
 ## API
 
-Create a `Pbf` object, optionally given a `Buffer` or `Uint8Array` as input data:
+Create a `Pbf` object, optionally given a `Uint8Array` as input data:
 
 ```js
 // parse a pbf file from disk in Node
-var pbf = new Pbf(fs.readFileSync('data.pbf'));
+var pbf = new Pbf(await Deno.readFile('data.pbf'));
 
 // parse a pbf file in a browser after an ajax request with responseType="arraybuffer"
 var pbf = new Pbf(new Uint8Array(xhr.response));
@@ -300,6 +254,10 @@ The resulting module exports each message by name with the following methods:
 The resulting code is clean and simple, so feel free to customize it.
 
 ## Changelog
+
+#### 4.0.0 (May 1, 2021)
+
+- update as ES module version.
 
 #### 3.2.1 (Oct 11, 2019)
 
