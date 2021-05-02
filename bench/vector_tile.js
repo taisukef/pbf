@@ -2,7 +2,8 @@
 
 // Tile ========================================
 
-var Tile = exports.Tile = {};
+//var Tile = exports.Tile = {};
+const Tile = {};
 
 Tile.read = function (pbf, end) {
     return pbf.readFields(Tile._readField, {layers: []}, end);
@@ -90,3 +91,5 @@ Tile.Layer.write = function (obj, pbf) {
     if (obj.values) for (i = 0; i < obj.values.length; i++) pbf.writeMessage(4, Tile.Value.write, obj.values[i]);
     if (obj.extent != undefined && obj.extent !== 4096) pbf.writeVarintField(5, obj.extent);
 };
+
+export { Tile };
