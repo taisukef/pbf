@@ -2,7 +2,7 @@
 
 //module.exports = Pbf;
 
-import { ieee754 } from "http://taisukef.github.io/ieee754/ieee754.js";
+import { ieee754 } from "https://taisukef.github.io/ieee754/ieee754.js";
 
 function Pbf(buf) {
     this.buf = ArrayBuffer.isView && ArrayBuffer.isView(buf) ? buf : new Uint8Array(buf || 0);
