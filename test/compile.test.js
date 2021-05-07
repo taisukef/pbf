@@ -1,38 +1,38 @@
-'use strict';
+import * as t from "https://deno.land/std/testing/asserts.ts";
+import { resolve } from "https://taisukef.github.io/resolve-protobuf-schema-deno/index.js";
+import { Pbf } from "../Pbf.js";
+import { compile } from "../compile.js";
+import { parseURL } from "https://code4sabae.github.io/js/parseURL.js";
+const { dirname } = parseURL(import.meta.url);
 
-var fs = require('fs');
-var path = require('path');
-var test = require('tap').test;
-var resolve = require('resolve-protobuf-schema').sync;
+const path = {
+    join(dir, fn) {
+        return dir + fn;
+    }
+};
 
-var Pbf = require('../');
-var compile = require('../compile');
-
-test('compiles vector tile proto', function(t) {
-    var proto = resolve(path.join(__dirname, '../bench/vector_tile.proto'));
-    var tileBuf = fs.readFileSync(path.join(__dirname, 'fixtures/12665.vector.pbf'));
+Deno.test('compiles vector tile proto', async () => {
+    var proto = await resolve(path.join(dirname, '../bench/vector_tile.proto'));
+    var tileBuf = Deno.readFileSync(path.join(dirname, 'fixtures/12665.vector.pbf'));
     var Tile = compile(proto).Tile;
-
+    
     var tile = Tile.read(new Pbf(tileBuf));
-    t.equal(tile.layers.length, 11);
+    t.assertEquals(tile.layers.length, 11);
 
     var pbf = new Pbf();
     Tile.write(tile, pbf);
     var buf = pbf.finish();
-    t.equal(buf.length, 124946);
-
-    t.end();
+    t.assertEquals(buf.length, 124946);
 });
 
-test('compiles proto with embedded type reference', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/embedded_type.proto'));
+Deno.test('compiles proto with embedded type reference', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/embedded_type.proto'));
     compile(proto);
 
-    t.end();
 });
 
-test('compiles packed proto', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/packed.proto'));
+Deno.test('compiles packed proto', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/packed.proto'));
     var NotPacked = compile(proto).NotPacked;
     var FalsePacked = compile(proto).FalsePacked;
 
@@ -45,14 +45,13 @@ test('compiles packed proto', function(t) {
     var buf = pbf.finish();
 
     var decompressed = FalsePacked.read(new Pbf(buf));
-    t.equals(buf.length, 17);
-    t.deepEqual(original, decompressed);
+    t.assertEquals(buf.length, 17);
+    t.assertEquals(original, decompressed);
 
-    t.end();
 });
 
-test('reads packed with unpacked field', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/packed.proto'));
+Deno.test('reads packed with unpacked field', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/packed.proto'));
     var Packed = compile(proto).Packed;
     var FalsePacked = compile(proto).FalsePacked;
 
@@ -65,14 +64,13 @@ test('reads packed with unpacked field', function(t) {
     var buf = pbf.finish();
 
     var decompressed = FalsePacked.read(new Pbf(buf));
-    t.equals(buf.length, 14);
-    t.deepEqual(original, decompressed);
+    t.assertEquals(buf.length, 14);
+    t.assertEquals(original, decompressed);
 
-    t.end();
 });
 
-test('compiles packed proto3', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/packed_proto3.proto'));
+Deno.test('compiles packed proto3', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/packed_proto3.proto'));
     var NotPacked = compile(proto).NotPacked;
     var FalsePacked = compile(proto).FalsePacked;
 
@@ -89,15 +87,14 @@ test('compiles packed proto3', function(t) {
     var notPackedBuf = pbf.finish();
 
     var decompressed = NotPacked.read(new Pbf(falsePackedBuf));
-    t.deepEqual(original, decompressed);
-    t.equals(notPackedBuf.length, 14);
-    t.ok(falsePackedBuf.length > notPackedBuf.length, 'Did not respect [packed=false]');
+    t.assertEquals(original, decompressed);
+    t.assertEquals(notPackedBuf.length, 14);
+    t.assert(falsePackedBuf.length > notPackedBuf.length, 'Did not respect [packed=false]');
 
-    t.end();
 });
 
-test('compiles packed with multi-byte tags', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/packed_proto3.proto'));
+Deno.test('compiles packed with multi-byte tags', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/packed_proto3.proto'));
     var Packed = compile(proto).Packed;
 
     var original = {
@@ -108,14 +105,13 @@ test('compiles packed with multi-byte tags', function(t) {
     var buf = pbf.finish();
 
     var decompressed = Packed.read(new Pbf(buf));
-    t.equals(buf.length, 9);
-    t.deepEqual(original, decompressed);
+    t.assertEquals(buf.length, 9);
+    t.assertEquals(original, decompressed);
 
-    t.end();
 });
 
-test('compiles defaults', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/defaults.proto'));
+Deno.test('compiles defaults', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/defaults.proto'));
     var Envelope = compile(proto).Envelope;
     var pbf = new Pbf();
 
@@ -124,8 +120,8 @@ test('compiles defaults', function(t) {
     var buf = pbf.finish();
     var data = Envelope.read(new Pbf(buf));
 
-    t.equals(buf.length, 0);
-    t.deepEqual(data, {
+    t.assertEquals(buf.length, 0);
+    t.assertEquals(data, {
         type: {
             options: {},
             value: 1
@@ -136,11 +132,10 @@ test('compiles defaults', function(t) {
         id: 1
     });
 
-    t.end();
 });
 
-test('compiles proto3 ignoring defaults', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/defaults_proto3.proto'));
+Deno.test('compiles proto3 ignoring defaults', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/defaults_proto3.proto'));
     var Envelope = compile(proto).Envelope;
     var pbf = new Pbf();
 
@@ -149,19 +144,18 @@ test('compiles proto3 ignoring defaults', function(t) {
     var buf = pbf.finish();
     var data = Envelope.read(new Pbf(buf));
 
-    t.equals(buf.length, 0);
+    t.assertEquals(buf.length, 0);
 
-    t.equals(data.type, 0);
-    t.equals(data.name, '');
-    t.equals(data.flag, false);
-    t.equals(data.weight, 0);
-    t.equals(data.id, 0);
+    t.assertEquals(data.type, 0);
+    t.assertEquals(data.name, '');
+    t.assertEquals(data.flag, false);
+    t.assertEquals(data.weight, 0);
+    t.assertEquals(data.id, 0);
 
-    t.end();
 });
 
-test('compiles maps', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/map.proto'));
+Deno.test('compiles maps', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/map.proto'));
     var Envelope = compile(proto).Envelope;
 
     var original = {
@@ -181,13 +175,12 @@ test('compiles maps', function(t) {
 
     var decompressed = Envelope.read(new Pbf(buf));
 
-    t.deepEqual(original, decompressed);
+    t.assertEquals(original, decompressed);
 
-    t.end();
 });
 
-test('does not write undefined or null values', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/embedded_type.proto'));
+Deno.test('does not write undefined or null values', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/embedded_type.proto'));
     var EmbeddedType = compile(proto).EmbeddedType;
     var pbf = new Pbf();
 
@@ -201,11 +194,10 @@ test('does not write undefined or null values', function(t) {
         value: null
     });
 
-    t.end();
 });
 
-test('handles all implicit default values', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/defaults_implicit.proto'));
+Deno.test('handles all implicit default values', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/defaults_implicit.proto'));
     var Envelope = compile(proto).Envelope;
     var pbf = new Pbf();
 
@@ -213,32 +205,31 @@ test('handles all implicit default values', function(t) {
     var buf = pbf.finish();
     var data = Envelope.read(new Pbf(buf));
 
-    t.equals(buf.length, 0);
+    t.assertEquals(buf.length, 0);
 
-    t.equals(data.type, 0);
-    t.equals(data.name, '');
-    t.equals(data.flag, false);
-    t.equals(data.weight, 0);
-    t.equals(data.id, 0);
-    t.deepEqual(data.tags, []);
-    t.deepEqual(data.numbers, []);
-    t.equals(data.bytes, undefined);
-    t.equals(data.custom, undefined);
-    t.deepEqual(data.types, []);
+    t.assertEquals(data.type, 0);
+    t.assertEquals(data.name, '');
+    t.assertEquals(data.flag, false);
+    t.assertEquals(data.weight, 0);
+    t.assertEquals(data.id, 0);
+    t.assertEquals(data.tags, []);
+    t.assertEquals(data.numbers, []);
+    t.assertEquals(data.bytes, undefined);
+    t.assertEquals(data.custom, undefined);
+    t.assertEquals(data.types, []);
 
-    t.end();
 });
 
-test('sets oneof field name', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/oneof.proto'));
+Deno.test('sets oneof field name', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/oneof.proto'));
     var Envelope = compile(proto).Envelope;
     var pbf = new Pbf();
 
     Envelope.write({}, pbf);
     var data = Envelope.read(new Pbf(pbf.finish()));
 
-    t.equals(data.value, undefined);
-    t.equals(data.id, 0);
+    t.assertEquals(data.value, undefined);
+    t.assertEquals(data.id, 0);
 
     pbf = new Pbf();
     Envelope.write({
@@ -246,14 +237,13 @@ test('sets oneof field name', function(t) {
     }, pbf);
     data = Envelope.read(new Pbf(pbf.finish()));
 
-    t.equals(data.value, 'float');
-    t.equals(data[data.value], 1.5);
+    t.assertEquals(data.value, 'float');
+    t.assertEquals(data[data.value], 1.5);
 
-    t.end();
 });
 
-test('handles jstype=JS_STRING', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/type_string.proto'));
+Deno.test('handles jstype=JS_STRING', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/type_string.proto'));
     var TypeString = compile(proto).TypeString;
     var TypeNotString = compile(proto).TypeNotString;
     var pbf = new Pbf();
@@ -268,24 +258,23 @@ test('handles jstype=JS_STRING', function(t) {
     var buf = pbf.finish();
     var data = TypeString.read(new Pbf(buf));
 
-    t.equals(data.int, '-5');
-    t.equals(data.long, '10000');
-    t.equals(data.boolVal, true);
-    t.equals(data.float, '12');
-    t.equals(data.default_implicit, '0');
-    t.equals(data.default_explicit, '42');
+    t.assertEquals(data.int, '-5');
+    t.assertEquals(data.long, '10000');
+    t.assertEquals(data.boolVal, true);
+    t.assertEquals(data.float, '12');
+    t.assertEquals(data.default_implicit, '0');
+    t.assertEquals(data.default_explicit, '42');
 
     data = TypeNotString.read(new Pbf(buf));
-    t.equals(data.int, -5);
-    t.equals(data.long, 10000);
-    t.equals(data.boolVal, true);
-    t.equals(data.float, 12);
+    t.assertEquals(data.int, -5);
+    t.assertEquals(data.long, 10000);
+    t.assertEquals(data.boolVal, true);
+    t.assertEquals(data.float, 12);
 
-    t.end();
 });
 
-test('handles negative varint', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/varint.proto'));
+Deno.test('handles negative varint', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/varint.proto'));
     var Envelope = compile(proto).Envelope;
     var pbf = new Pbf();
 
@@ -297,14 +286,13 @@ test('handles negative varint', function(t) {
     var buf = pbf.finish();
     var data = Envelope.read(new Pbf(buf));
 
-    t.equals(data.int, -5);
-    t.equals(data.long, -10);
+    t.assertEquals(data.int, -5);
+    t.assertEquals(data.long, -10);
 
-    t.end();
 });
 
-test('handles unsigned varint', function(t) {
-    var proto = resolve(path.join(__dirname, './fixtures/varint.proto'));
+Deno.test('handles unsigned varint', async () => {
+    var proto = await resolve(path.join(dirname, './fixtures/varint.proto'));
     var Envelope = compile(proto).Envelope;
     var pbf = new Pbf();
 
@@ -316,8 +304,7 @@ test('handles unsigned varint', function(t) {
     var buf = pbf.finish();
     var data = Envelope.read(new Pbf(buf));
 
-    t.equals(data.uint, Math.pow(2, 31));
-    t.equals(data.ulong, Math.pow(2, 63));
+    t.assertEquals(data.uint, Math.pow(2, 31));
+    t.assertEquals(data.ulong, Math.pow(2, 63));
 
-    t.end();
 });
